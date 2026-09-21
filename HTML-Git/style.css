@@ -4,6 +4,10 @@ body {
     margin: 20px;
 }
 
+.combinators {
+    background-color: #4dde0a;
+}
+
 h1 {
     color: #008CBA; /* W3Schools Blue / Teal */
     font-family: "Segoe UI", Tahoma, sans-serif;
