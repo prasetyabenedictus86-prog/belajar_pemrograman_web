@@ -1,42 +1,56 @@
 body {
-    background: linear-gradient(to right, #cfd9df, #e2ebf0); /* W3Schools subtle gradient style */
-    font-family: "Segoe UI", Arial, sans-serif;
-    margin: 20px;
+    background: linear-gradient(135deg, #ff007f, #7f00ff, #00f0ff, #fffc00, #ff007f);
+    background-size: 500% 500%;
+    animation: rainbowBg 10s ease infinite;
+    font-family: Arial, sans-serif;
+    margin: 30px;
+    color: #000;
 }
 
-.combinators {
-    background-color: #4dde0a;
+@keyframes rainbowBg {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+body > *, body > div {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), inset 0 0 5px rgba(255, 0, 127, 0.3);
+    border: 1.5px solid rgba(255, 255, 255, 0.8);
 }
 
 h1 {
-    color: #008CBA; /* W3Schools Blue / Teal */
-    font-family: "Segoe UI", Tahoma, sans-serif;
-    font-size: 45px;
+    color: #ff0055;
+    font-size: 38px;
     text-align: center;
+    text-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
 }
 
 .bold {
     color: red;
 }
 
-/* W3Schools Card Style */
 .muncul {
-    color: #333;
-    background-color: white;
-    padding: 20px;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2); /* W3Schools Card Shadow */
     opacity: 0;
     animation-name: fadeInNama;
     animation-duration: 2s;
     animation-fill-mode: forwards;
+    border: 2px solid cyan !important;
+    box-shadow: 0 0 25px cyan, inset 0 0 10px magenta !important;
 }
 
-.muncul h3 {
-    color: #008CBA;
-    margin-top: 0;
+.muncul img {
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    transition: transform 0.5s ease, filter 0.5s ease;
+}
+
+.muncul img:hover {
+    transform: scale(1.03);
+    filter: hue-rotate(90deg) saturate(150%);
 }
 
 @keyframes fadeInNama {
@@ -50,46 +64,29 @@ h1 {
     }
 }
 
-/* W3Schools Styled Table */
-table {
+table, th, td {
+    border: 1px solid black;
     border-collapse: collapse;
-    width: 100%;
-    margin-top: 15px;
-    margin-bottom: 20px;
+}
+
+table {
     background-color: white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    width: 100%;
 }
 
 th, td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
+    padding: 10px;
 }
 
 th {
-    background-color: #008CBA;
-    color: white;
+    background-color: #f0f0f0;
 }
 
 tr:hover {
-    background-color: #f5f5f5; /* W3Schools hoverable table */
+    background-color: rgba(0, 240, 255, 0.15);
 }
 
-/* W3Schools Styled Links / Buttons */
 a {
-    color: #4CAF50; /* W3Schools Green */
-    text-decoration: none;
+    color: #0077cc;
     font-weight: bold;
-}
-
-a:hover {
-    color: #45a049;
-    text-decoration: underline;
-}
-
-ul {
-    background-color: white;
-    padding: 15px 30px;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
