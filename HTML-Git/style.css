@@ -1,16 +1,29 @@
 body {
-    background: linear-gradient(to right, grey, white);
-
+    background: linear-gradient(to right, #cfd9df, #e2ebf0); /* W3Schools subtle gradient style */
+    font-family: "Segoe UI", Arial, sans-serif;
+    margin: 20px;
 }
 
 h1 {
-    color: cyan;
-    font-family: forte;
-    font-size: 65px;
+    color: #008CBA; /* W3Schools Blue / Teal */
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    font-size: 45px;
+    text-align: center;
 }
 
+.bold {
+    color: red;
+}
+
+/* W3Schools Card Style */
 .muncul {
-    color: rgb(243, 241, 241);
+    color: #333;
+    background-color: white;
+    padding: 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2); /* W3Schools Card Shadow */
     opacity: 0;
     animation-name: fadeInNama;
     animation-duration: 2s;
@@ -18,7 +31,8 @@ h1 {
 }
 
 .muncul h3 {
-    color: white;
+    color: #008CBA;
+    margin-top: 0;
 }
 
 @keyframes fadeInNama {
@@ -30,4 +44,48 @@ h1 {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* W3Schools Styled Table */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #008CBA;
+    color: white;
+}
+
+tr:hover {
+    background-color: #f5f5f5; /* W3Schools hoverable table */
+}
+
+/* W3Schools Styled Links / Buttons */
+a {
+    color: #4CAF50; /* W3Schools Green */
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a:hover {
+    color: #45a049;
+    text-decoration: underline;
+}
+
+ul {
+    background-color: white;
+    padding: 15px 30px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
