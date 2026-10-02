@@ -1,87 +1,156 @@
+/* ==========================================================
+   TEMA: variabel warna (terang = default, gelap = body.dark)
+   ========================================================== */
 body {
-  background: linear-gradient(
-    135deg,
-    #ff007f,
-    #7f00ff,
-    #00f0ff,
-    #fffc00,
-    #ff007f
-  );
-  background-size: 500% 500%;
-  animation: rainbowBg 10s ease infinite;
-  font-family: Arial, sans-serif;
-  margin: 30px;
-  color: #000;
+  --teks: #1f2340;
+  --muted: #5d6385;
+  --dasar: #f6f1ff;
+  --kartu: rgba(255, 255, 255, 0.74);
+  --garis: rgba(255, 255, 255, 0.95);
+  --garis-isi: rgba(109, 40, 217, 0.18);
+  --bayangan: 0 10px 30px rgba(109, 40, 217, 0.14);
+  --aksen: #e11d74;
+  --aksen2: #6d28d9;
+  --aksen3: #0891b2;
+  --link: #0e7490;
+  --input: #ffffff;
+  --th: #efe4ff;
+  --hover: rgba(109, 40, 217, 0.08);
+  --blob1: #ffc4e1;
+  --blob2: #bdeeff;
+  --blob3: #dccbff;
+  --error: #c4122f;
+  color-scheme: light;
 }
 
-@keyframes rainbowBg {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
+body.dark {
+  --teks: #e9eaff;
+  --muted: #a3a8d1;
+  --dasar: #0a0c1d;
+  --kartu: rgba(22, 25, 52, 0.72);
+  --garis: rgba(167, 139, 250, 0.2);
+  --garis-isi: rgba(167, 139, 250, 0.25);
+  --bayangan: 0 10px 34px rgba(0, 0, 0, 0.5);
+  --aksen: #ff6aa9;
+  --aksen2: #a78bfa;
+  --aksen3: #22d3ee;
+  --link: #67e8f9;
+  --input: #1a1d3d;
+  --th: #2a2d5c;
+  --hover: rgba(167, 139, 250, 0.14);
+  --blob1: #5b1a4a;
+  --blob2: #0e3f56;
+  --blob3: #2c1d6b;
+  --error: #ff8a9b;
+  color-scheme: dark;
+}
+
+/* ==========================================================
+   DASAR & LATAR AURORA
+   ========================================================== */
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0 auto;
+  max-width: 860px;
+  padding: 28px 16px 100px;
+  background-color: var(--dasar);
+  color: var(--teks);
+  font-family:
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    Roboto,
+    Arial,
+    sans-serif;
+  line-height: 1.65;
+  transition:
+    background-color 0.5s ease,
+    color 0.5s ease;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: -10%;
+  z-index: -1;
+  background:
+    radial-gradient(40% 35% at 15% 15%, var(--blob1), transparent 70%),
+    radial-gradient(40% 35% at 88% 20%, var(--blob2), transparent 70%),
+    radial-gradient(45% 40% at 55% 95%, var(--blob3), transparent 70%);
+  animation: aurora 18s ease-in-out infinite alternate;
+  transition: opacity 0.5s ease;
+}
+@keyframes aurora {
+  to {
+    transform: translate(4%, 3%) scale(1.1) rotate(3deg);
   }
 }
 
-body > *,
-body > div {
-  background-color: rgba(255, 255, 255, 0.95);
-  padding: 14px 18px;
-  margin-bottom: 16px;
-  border-radius: 10px;
-  box-shadow:
-    0 0 15px rgba(0, 255, 255, 0.6),
-    inset 0 0 5px rgba(255, 0, 127, 0.3);
-  border: 1.5px solid rgba(255, 255, 255, 0.8);
-}
-
-.warna {
-  background-image: url(), linear-gradient(to right, #ff0055, #00f0ff);
-  background-position:
-    right bottom,
-    left bottom;
-  background-repeat: no-repeat, repeat;
-  padding: 15px;
+/* ==========================================================
+   KARTU KACA (semua anak langsung body, kecuali elemen khusus)
+   ========================================================== */
+body > :where(:not(script, #progres-scroll, #tombol-float, .konfeti)) {
+  background-color: var(--kartu);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--garis);
+  border-radius: 18px;
+  padding: 18px 24px;
+  margin: 0 0 18px;
+  box-shadow: var(--bayangan);
 }
 
 h1 {
-  color: #ff0055;
-  font-size: 38px;
   text-align: center;
-  text-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
+  font-size: clamp(28px, 6vw, 44px);
+  line-height: 1.2;
+  margin-top: 0;
+}
+.judul-teks {
+  background: linear-gradient(
+    90deg,
+    var(--aksen),
+    var(--aksen2),
+    var(--aksen3)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+h3 {
+  margin-top: 0;
+}
+p {
+  margin-top: 0;
 }
 
-.bold {
-  color: red;
-}
-
+/* Kartu perkenalan (foto) */
 .muncul {
   opacity: 0;
-  animation-name: fadeInNama;
-  animation-duration: 2s;
-  animation-fill-mode: forwards;
-  border: 2px solid cyan !important;
+  animation: fadeInNama 1.2s ease forwards;
+  border: 2px solid var(--aksen3) !important;
   box-shadow:
-    0 0 25px cyan,
-    inset 0 0 10px magenta !important;
+    0 0 28px color-mix(in srgb, var(--aksen3) 45%, transparent),
+    0 10px 30px rgba(0, 0, 0, 0.12) !important;
 }
-
 .muncul img {
-  border-radius: 12px;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   transition:
     transform 0.5s ease,
     filter 0.5s ease;
 }
-
 .muncul img:hover {
-  transform: scale(1.03);
-  filter: hue-rotate(90deg) saturate(150%);
+  transform: scale(1.03) rotate(-0.5deg);
+  filter: saturate(1.25);
 }
-
 @keyframes fadeInNama {
   from {
     opacity: 0;
@@ -93,32 +162,435 @@ h1 {
   }
 }
 
-table,
-th,
-td {
-  border: 1px solid black;
-  border-collapse: collapse;
+/* Kartu cerita (hero) */
+.warna {
+  background-image: linear-gradient(
+    135deg,
+    var(--aksen),
+    var(--aksen2) 55%,
+    var(--aksen3)
+  );
+  color: #fff;
+  border-color: transparent;
+  font-size: 1.05em;
+}
+.warna p {
+  margin: 0;
+}
+.bold {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  padding: 1px 8px;
+  border-radius: 8px;
 }
 
-table {
-  background-color: white;
-  width: 100%;
-}
-
-th,
-td {
-  padding: 10px;
-}
-
-th {
-  background-color: #f0f0f0;
-}
-
-tr:hover {
-  background-color: rgba(0, 240, 255, 0.15);
-}
-
+/* Link */
 a {
-  color: #0077cc;
+  color: var(--link);
+  font-weight: 700;
+  text-decoration: none;
+  background-image: linear-gradient(var(--aksen), var(--aksen));
+  background-size: 0% 2px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition:
+    background-size 0.3s ease,
+    color 0.3s ease;
+}
+a:hover {
+  background-size: 100% 2px;
+  color: var(--aksen);
+}
+
+::selection {
+  background: var(--aksen);
+  color: #fff;
+}
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--aksen), var(--aksen2));
+  border-radius: 10px;
+}
+:focus-visible {
+  outline: 3px solid var(--aksen3);
+  outline-offset: 2px;
+}
+
+/* ==========================================================
+   PROGRESS SCROLL, EFEK, KURSOR
+   ========================================================== */
+#progres-scroll {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--aksen),
+    var(--aksen2),
+    var(--aksen3)
+  );
+  z-index: 2000;
+}
+.konfeti {
+  position: fixed;
+  pointer-events: none;
+}
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s ease,
+    background-color 0.5s ease,
+    color 0.5s ease;
+}
+.reveal.tampil {
+  opacity: 1;
+  transform: none;
+}
+.kursor::after {
+  content: "|";
+  margin-left: 4px;
+  -webkit-text-fill-color: var(--aksen);
+  animation: kedip 0.7s infinite;
+}
+@keyframes kedip {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ==========================================================
+   SAPAAN & STATISTIK
+   ========================================================== */
+.kotak-info {
+  text-align: center;
+  font-size: 1.1em;
+}
+.kotak-info small {
+  display: block;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.statistik {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.stat {
+  flex: 1 1 120px;
+  text-align: center;
+  padding: 14px 10px;
+  border-radius: 14px;
+  color: #fff;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--aksen), var(--aksen2));
+  transition: transform 0.25s ease;
+}
+.stat:nth-child(2) {
+  background: linear-gradient(135deg, var(--aksen2), var(--aksen3));
+}
+.stat:nth-child(3) {
+  background: linear-gradient(135deg, var(--aksen3), #10b981);
+}
+.stat:hover {
+  transform: translateY(-4px);
+}
+.stat .angka {
+  display: block;
+  font-size: 2.1em;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+/* ==========================================================
+   HOBI
+   ========================================================== */
+body > ul {
+  list-style: none;
+}
+body > ul li {
+  position: relative;
+  padding: 6px 0 6px 28px;
+  cursor: pointer;
+  transition:
+    transform 0.25s ease,
+    color 0.25s ease;
+}
+body > ul li::before {
+  content: "\266A";
+  position: absolute;
+  left: 4px;
+  color: var(--aksen);
   font-weight: bold;
+}
+body > ul li:hover {
+  transform: translateX(8px);
+  color: var(--aksen);
+}
+body > ul li.aktif {
+  color: var(--aksen2);
+  font-weight: 700;
+}
+body > ul li.aktif::after {
+  content: " \2728";
+}
+.aksi-hobi {
+  text-align: center;
+}
+#hasil-hobi {
+  display: block;
+  margin-top: 10px;
+  min-height: 1.5em;
+  font-weight: 700;
+  color: var(--aksen2);
+}
+
+/* ==========================================================
+   TABEL
+   ========================================================== */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: transparent;
+  overflow: hidden;
+  border-radius: 12px;
+}
+th,
+td {
+  padding: 11px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--garis-isi);
+}
+th {
+  background: var(--th);
+  color: var(--aksen2);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+th:hover {
+  filter: brightness(1.08);
+}
+tr {
+  cursor: pointer;
+}
+tr:hover td {
+  background: var(--hover);
+}
+tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--aksen2) 5%, transparent);
+}
+tr.dipilih td,
+tr.dipilih:nth-child(even) td {
+  background: color-mix(in srgb, #facc15 40%, transparent);
+  font-weight: 700;
+}
+tr.baru {
+  animation: baru 0.8s ease;
+}
+@keyframes baru {
+  from {
+    background-color: var(--aksen3);
+    transform: scale(1.02);
+  }
+}
+
+/* ==========================================================
+   FORM & TOMBOL
+   ========================================================== */
+.input-teks,
+.ipk select,
+.ipk input {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  font: inherit;
+  color: var(--teks);
+  background: var(--input);
+  border: 1.5px solid var(--garis-isi);
+  border-radius: 10px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.input-teks:focus,
+.ipk select:focus,
+.ipk input:focus {
+  outline: none;
+  border-color: var(--aksen);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--aksen) 25%, transparent);
+}
+.tombol {
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 10px;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--aksen), var(--aksen2));
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.tombol:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--aksen2) 40%, transparent);
+}
+.tombol:active {
+  transform: scale(0.96);
+}
+.tombol.sekunder {
+  background: transparent;
+  color: var(--teks);
+  border: 1.5px solid var(--garis-isi);
+}
+.pesan-error {
+  color: var(--error);
+  font-size: 0.9em;
+  min-height: 1.2em;
+  margin: 0 0 6px;
+}
+.info-kecil {
+  color: var(--muted);
+  font-size: 0.88em;
+}
+
+/* ==========================================================
+   KALKULATOR IP
+   ========================================================== */
+.ipk-judul {
+  display: grid;
+  grid-template-columns: 1fr 70px 84px 36px;
+  gap: 8px;
+  font-size: 0.82em;
+  font-weight: 700;
+  color: var(--muted);
+  margin: 12px 0 4px;
+}
+.ipk-baris {
+  display: grid;
+  grid-template-columns: 1fr 70px 84px 36px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+  animation: baru 0.5s ease;
+}
+.ipk-baris input,
+.ipk-baris select {
+  margin-bottom: 0;
+  padding: 9px 8px;
+}
+.ipk-hapus {
+  border: 0;
+  background: none;
+  color: var(--error);
+  font-size: 1.3em;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ipk-aksi {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.ipk-hasil {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--aksen2) 9%, transparent);
+  text-align: center;
+}
+.ipk-angka {
+  font-size: 3em;
+  font-weight: 800;
+  line-height: 1.1;
+  background: linear-gradient(
+    90deg,
+    var(--aksen),
+    var(--aksen2),
+    var(--aksen3)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.ipk-bar {
+  height: 10px;
+  margin: 10px 0;
+  border-radius: 999px;
+  background: var(--garis-isi);
+  overflow: hidden;
+}
+.ipk-isi {
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--aksen), var(--aksen3));
+  transition: width 0.5s ease;
+}
+
+/* ==========================================================
+   TOMBOL MELAYANG
+   ========================================================== */
+#tombol-float {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1000;
+}
+.tombol-float {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--garis);
+  cursor: pointer;
+  font-size: 17px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--aksen), var(--aksen2));
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+.tombol-float:hover {
+  transform: scale(1.12) rotate(8deg);
+}
+
+/* ==========================================================
+   RESPONSIF & AKSESIBILITAS
+   ========================================================== */
+@media (max-width: 600px) {
+  body {
+    padding: 14px 10px 100px;
+  }
+  body > :where(:not(script, #progres-scroll, #tombol-float, .konfeti)) {
+    padding: 14px 16px;
+  }
+  .ipk-judul,
+  .ipk-baris {
+    grid-template-columns: 1fr 56px 74px 30px;
+  }
+  th,
+  td {
+    padding: 9px 8px;
+    font-size: 0.92em;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+  .muncul {
+    opacity: 1;
+  }
 }

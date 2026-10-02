@@ -2,140 +2,149 @@ console.log("File script.js berhasil jalan!");
 
 document.addEventListener("DOMContentLoaded", () => {
   /* ==========================================================
-     0. STYLE TAMBAHAN (disuntikkan lewat JS, style.css tetap utuh)
+     HELPER
      ========================================================== */
-  const extraCss = document.createElement("style");
-  extraCss.textContent = `
-    /* Efek muncul saat scroll */
-    .reveal { opacity: 0; transform: translateY(30px);
-              transition: opacity 0.8s ease, transform 0.8s ease; }
-    .reveal.tampil { opacity: 1; transform: translateY(0); }
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => [...document.querySelectorAll(s)];
 
-    /* Kursor berkedip untuk efek mengetik */
-    .kursor::after { content: "|"; margin-left: 4px; animation: kedip 0.7s infinite; }
-    @keyframes kedip { 50% { opacity: 0; } }
+  // localStorage + JSON (dibungkus try...catch)
+  const simpanLS = (kunci, nilai) => {
+    try {
+      localStorage.setItem(kunci, JSON.stringify(nilai));
+    } catch (e) {}
+  };
+  const bacaLS = (kunci, awal) => {
+    try {
+      return JSON.parse(localStorage.getItem(kunci)) ?? awal;
+    } catch (e) {
+      return awal;
+    }
+  };
 
-    /* Tombol melayang */
-    .tombol-float { width: 46px; height: 46px; border-radius: 50%; border: none;
-      cursor: pointer; font-size: 20px; color: #fff;
-      background: linear-gradient(135deg, #ff0055, #7f00ff);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.35);
-      transition: transform 0.2s ease; }
-    .tombol-float:hover { transform: scale(1.12) rotate(8deg); }
+  // Membuat elemen dengan cepat
+  function buat(tag, kelas, teks) {
+    const el = document.createElement(tag);
+    if (kelas) el.className = kelas;
+    if (teks) el.textContent = teks;
+    return el;
+  }
 
-    /* Baris tabel yang diklik */
-    tr.dipilih td { background-color: rgba(255, 252, 0, 0.45); font-weight: bold; }
-    tr { cursor: pointer; }
-    tr:first-child { cursor: default; }
-
-    /* Daftar hobi interaktif */
-    ul li { transition: transform 0.25s ease, color 0.25s ease; cursor: pointer; }
-    ul li:hover { transform: translateX(10px); color: #ff0055; }
-    ul li.aktif { color: #7f00ff; font-weight: bold; }
-    ul li.aktif::after { content: " \\2728"; }
-
-    /* Kotak sapaan & pencarian */
-    .kotak-info { text-align: center; font-size: 18px; }
-    .kotak-info small { display: block; opacity: 0.75; margin-top: 4px; }
-    .input-cari { width: 100%; box-sizing: border-box; padding: 10px;
-      border: 2px solid #00c8d6; border-radius: 8px; font-size: 15px; outline: none; }
-    .input-cari:focus { border-color: #ff0055; box-shadow: 0 0 8px rgba(255,0,85,0.5); }
-
-    /* Mode gelap */
-    body.dark { color: #eee; }
-    body.dark > * { background-color: rgba(25, 25, 40, 0.93) !important; color: #eee; }
-    body.dark h1 { color: #ff6fa5; }
-    body.dark table { background-color: #1e1e2e; }
-    body.dark th { background-color: #2c2c44; color: #fff; }
-    body.dark td, body.dark th { border-color: #666; }
-    body.dark a { color: #66d9ff; }
-    body.dark .input-cari { background: #2c2c44; color: #fff; }
-    body.dark .warna { background-color: transparent !important; color: #000; }
-  `;
-  document.head.appendChild(extraCss);
+  const judul = $("h1");
+  const tabel = $("table");
+  const daftarHobi = $("body > ul");
 
   /* ==========================================================
-     1. EFEK MENGETIK PADA JUDUL (h1)
+     1. PROGRESS BAR SCROLL
      ========================================================== */
-  const judul = document.querySelector("h1");
+  const bar = buat("div");
+  bar.id = "progres-scroll";
+  document.body.appendChild(bar);
+  window.addEventListener("scroll", () => {
+    const tinggi = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (tinggi > 0 ? (window.scrollY / tinggi) * 100 : 0) + "%";
+  });
+
+  /* ==========================================================
+     2. EFEK MENGETIK PADA JUDUL
+     ========================================================== */
   if (judul) {
     const teksJudul = judul.textContent.trim();
+    const span = buat("span", "judul-teks kursor");
     judul.textContent = "";
-    judul.classList.add("kursor");
+    judul.appendChild(span);
     let i = 0;
     const ketik = setInterval(() => {
-      judul.textContent = teksJudul.slice(0, ++i);
+      span.textContent = teksJudul.slice(0, ++i);
       if (i >= teksJudul.length) {
         clearInterval(ketik);
-        setTimeout(() => judul.classList.remove("kursor"), 1500);
+        setTimeout(() => span.classList.remove("kursor"), 1500);
       }
     }, 80);
   }
 
   /* ==========================================================
-     2. SAPAAN OTOMATIS + JAM DIGITAL (WIB)
+     3. SAPAAN OTOMATIS + JAM DIGITAL (WIB) - object Date & Intl
      ========================================================== */
-  if (judul) {
-    const kotakInfo = document.createElement("div");
-    kotakInfo.className = "kotak-info";
-    judul.insertAdjacentElement("afterend", kotakInfo);
+  const kotakInfo = buat("div", "kotak-info");
+  if (judul) judul.insertAdjacentElement("afterend", kotakInfo);
 
-    const hari = [
-      "Minggu",
-      "Senin",
-      "Selasa",
-      "Rabu",
-      "Kamis",
-      "Jumat",
-      "Sabtu",
-    ];
-
-    const perbaruiJam = () => {
-      const sekarang = new Date();
-      const jam = Number(
+  function perbaruiJam() {
+    const sekarang = new Date();
+    const opsi = { timeZone: "Asia/Jakarta" };
+    const jam =
+      Number(
         new Intl.DateTimeFormat("id-ID", {
+          ...opsi,
           hour: "numeric",
           hour12: false,
-          timeZone: "Asia/Jakarta",
         }).format(sekarang),
-      );
+      ) % 24;
 
-      let sapaan = "Selamat malam";
-      if (jam >= 4 && jam < 11) sapaan = "Selamat pagi";
-      else if (jam >= 11 && jam < 15) sapaan = "Selamat siang";
-      else if (jam >= 15 && jam < 18) sapaan = "Selamat sore";
+    let sapaan;
+    if (jam >= 4 && jam < 11) sapaan = "Selamat pagi";
+    else if (jam >= 11 && jam < 15) sapaan = "Selamat siang";
+    else if (jam >= 15 && jam < 18) sapaan = "Selamat sore";
+    else sapaan = "Selamat malam";
 
-      const tanggal = sekarang.toLocaleDateString("id-ID", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        timeZone: "Asia/Jakarta",
-      });
-      const waktu = sekarang.toLocaleTimeString("id-ID", {
-        timeZone: "Asia/Jakarta",
-      });
-      const namaHari =
-        hari[
-          new Date(
-            sekarang.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }),
-          ).getDay()
-        ];
+    const tanggal = sekarang.toLocaleDateString("id-ID", {
+      ...opsi,
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+    const waktu = sekarang.toLocaleTimeString("id-ID", opsi);
 
-      kotakInfo.innerHTML =
-        `\u{1F44B} <b>${sapaan}, selamat datang!</b>` +
-        `<small>${namaHari}, ${tanggal} &bull; ${waktu} WIB</small>`;
-    };
-    perbaruiJam();
-    setInterval(perbaruiJam, 1000);
+    kotakInfo.replaceChildren();
+    const b = buat("b", "", `\u{1F44B} ${sapaan}, selamat datang!`);
+    const kecil = buat("small", "", `${tanggal} \u2022 ${waktu} WIB`);
+    kotakInfo.append(b, kecil);
+  }
+  perbaruiJam();
+  setInterval(perbaruiJam, 1000);
+
+  /* ==========================================================
+     4. KOTAK STATISTIK (angka naik otomatis dengan setInterval)
+     ========================================================== */
+  const statistik = buat("div", "statistik");
+  const angkaEl = {};
+  [
+    ["hobi", "Hobi"],
+    ["teman", "Teman"],
+    ["medsos", "Medsos"],
+  ].forEach(([kunci, label]) => {
+    const kotak = buat("div", "stat");
+    const angka = buat("span", "angka", "0");
+    kotak.append(angka, document.createTextNode(label));
+    statistik.appendChild(kotak);
+    angkaEl[kunci] = angka;
+  });
+  kotakInfo.insertAdjacentElement("afterend", statistik);
+
+  function animasiAngka(el, target) {
+    let sekarang = Number(el.textContent);
+    if (sekarang === target) return;
+    const langkah = target > sekarang ? 1 : -1;
+    const t = setInterval(() => {
+      sekarang += langkah;
+      el.textContent = sekarang;
+      if (sekarang === target) clearInterval(t);
+    }, 120);
+  }
+
+  const barisTeman = () =>
+    [...tabel.tBodies[0].rows]
+      .slice(1)
+      .filter((r) => !r.classList.contains("baris-kosong"));
+  function perbaruiStatistik() {
+    animasiAngka(angkaEl.hobi, $$("body > ul li").length);
+    animasiAngka(angkaEl.teman, barisTeman().length);
+    animasiAngka(angkaEl.medsos, $$('a[target="_blank"]').length);
   }
 
   /* ==========================================================
-     3. ANIMASI MUNCUL SAAT DI-SCROLL
-        (.muncul dilewati karena sudah punya animasi sendiri)
+     5. ANIMASI MUNCUL SAAT DI-SCROLL (IntersectionObserver)
      ========================================================== */
-  const targetReveal = document.querySelectorAll(
-    "body > p, body > ul, body > table, .warna",
-  );
   const pengamat = new IntersectionObserver(
     (entries) => {
       entries.forEach((e) => {
@@ -147,85 +156,164 @@ document.addEventListener("DOMContentLoaded", () => {
     },
     { threshold: 0.15 },
   );
-  targetReveal.forEach((el) => {
+  $$("body > p, body > ul, body > table, .warna").forEach((el) => {
     el.classList.add("reveal");
     pengamat.observe(el);
   });
 
   /* ==========================================================
-     4. DAFTAR HOBI INTERAKTIF (klik untuk menandai favorit)
+     6. DAFTAR HOBI: klik = favorit, tombol acak = Math.random()
      ========================================================== */
-  document.querySelectorAll("ul li").forEach((li) => {
+  $$("body > ul li").forEach((li) => {
     li.title = "Klik untuk tandai favorit";
     li.addEventListener("click", () => li.classList.toggle("aktif"));
   });
 
-  /* ==========================================================
-     5. TABEL TEMAN: KOLOM PENCARIAN + SOROT BARIS
-     ========================================================== */
-  const tabel = document.querySelector("table");
-  if (tabel) {
-    // Kotak pencarian
-    const kotakCari = document.createElement("div");
-    const input = document.createElement("input");
-    input.type = "search";
-    input.className = "input-cari";
-    input.placeholder = "\u{1F50D} Cari teman atau kebiasaan...";
-    kotakCari.appendChild(input);
-    tabel.insertAdjacentElement("beforebegin", kotakCari);
+  if (daftarHobi) {
+    const aksi = buat("div", "aksi-hobi");
+    const tombol = buat("button", "tombol", "\u{1F3B2} Hobi apa hari ini?");
+    tombol.type = "button";
+    const hasil = buat("span");
+    hasil.id = "hasil-hobi";
+    aksi.append(tombol, hasil);
+    daftarHobi.insertAdjacentElement("afterend", aksi);
 
-    const barisData = [...tabel.querySelectorAll("tr")].slice(1); // lewati header
-
-    // Pesan jika tidak ada hasil
-    const kosong = document.createElement("tr");
-    kosong.innerHTML =
-      '<td colspan="2" style="text-align:center">Tidak ada yang cocok \u{1F622}</td>';
-    kosong.style.display = "none";
-    tabel.appendChild(kosong);
-
-    input.addEventListener("input", () => {
-      const kata = input.value.toLowerCase().trim();
-      let adaHasil = false;
-      barisData.forEach((tr) => {
-        const cocok = tr.textContent.toLowerCase().includes(kata);
-        tr.style.display = cocok ? "" : "none";
-        if (cocok) adaHasil = true;
-      });
-      kosong.style.display = adaHasil ? "none" : "";
-    });
-
-    // Klik baris untuk menyorot
-    barisData.forEach((tr) => {
-      tr.addEventListener("click", () => tr.classList.toggle("dipilih"));
+    tombol.addEventListener("click", () => {
+      const hobi = $$("body > ul li").map((li) =>
+        li.textContent.replace(/\s*\u2728$/, "").trim(),
+      );
+      const acak = hobi[Math.floor(Math.random() * hobi.length)];
+      hasil.textContent = `Hari ini cocoknya: ${acak}!`;
     });
   }
 
   /* ==========================================================
-     6. KONFETI SAAT FOTO DIKLIK
+     7. TABEL TEMAN: cari, urutkan, sorot, dan tambah baris
      ========================================================== */
-  const foto = document.querySelector(".muncul img");
+  if (tabel) {
+    const tbody = tabel.tBodies[0];
+
+    // --- Pencarian ---
+    const kotakCari = buat("div");
+    const input = buat("input", "input-teks");
+    input.type = "search";
+    input.placeholder = "\u{1F50D} Cari teman atau kebiasaan...";
+    kotakCari.appendChild(input);
+    tabel.insertAdjacentElement("beforebegin", kotakCari);
+
+    const kosong = tbody.insertRow();
+    kosong.className = "baris-kosong";
+    const tdKosong = kosong.insertCell();
+    tdKosong.colSpan = 2;
+    tdKosong.style.textAlign = "center";
+    tdKosong.textContent = "Tidak ada yang cocok \u{1F622}";
+    kosong.style.display = "none";
+
+    input.addEventListener("input", () => {
+      const kata = input.value.toLowerCase().trim();
+      let ada = false;
+      barisTeman().forEach((tr) => {
+        const cocok = tr.textContent.toLowerCase().includes(kata);
+        tr.style.display = cocok ? "" : "none";
+        if (cocok) ada = true;
+      });
+      kosong.style.display = ada ? "none" : "";
+    });
+
+    // --- Sorot baris (event delegation) ---
+    tbody.addEventListener("click", (e) => {
+      const tr = e.target.closest("tr");
+      if (tr && barisTeman().includes(tr)) tr.classList.toggle("dipilih");
+    });
+
+    // --- Urutkan dengan klik header (array sort) ---
+    const arah = [true, true];
+    $$("th").forEach((th, idx) => {
+      th.title = "Klik untuk urutkan";
+      th.addEventListener("click", () => {
+        const urut = barisTeman().sort((a, b) => {
+          const x = a.cells[idx].textContent.trim();
+          const y = b.cells[idx].textContent.trim();
+          return arah[idx]
+            ? x.localeCompare(y, "id")
+            : y.localeCompare(x, "id");
+        });
+        arah[idx] = !arah[idx];
+        urut.forEach((tr) => tbody.insertBefore(tr, kosong));
+      });
+    });
+
+    // --- Tambah teman (DOM: insertRow, insertCell) ---
+    const form = buat("div");
+    form.append(buat("b", "", "Tambah teman:"));
+    const inNama = buat("input", "input-teks");
+    inNama.placeholder = "Nama teman";
+    inNama.maxLength = 20;
+    const inKebiasaan = buat("input", "input-teks");
+    inKebiasaan.placeholder = "Kebiasaannya";
+    inKebiasaan.maxLength = 60;
+    const tombolTambah = buat("button", "tombol", "Tambah");
+    tombolTambah.type = "button";
+    const errTambah = buat("p", "pesan-error");
+    form.append(inNama, inKebiasaan, tombolTambah, errTambah);
+    tabel.insertAdjacentElement("afterend", form);
+
+    tombolTambah.addEventListener("click", () => {
+      const nama = inNama.value.trim();
+      const kebiasaan = inKebiasaan.value.trim();
+      if (nama === "" || kebiasaan === "") {
+        errTambah.textContent = "Nama dan kebiasaan wajib diisi.";
+        return;
+      }
+      if (!/^[A-Za-z\s]{2,}$/.test(nama)) {
+        errTambah.textContent = "Nama hanya boleh huruf (minimal 2).";
+        return;
+      }
+      if (
+        barisTeman().some(
+          (r) =>
+            r.cells[0].textContent.trim().toLowerCase() === nama.toLowerCase(),
+        )
+      ) {
+        errTambah.textContent = "Teman dengan nama itu sudah ada.";
+        return;
+      }
+      errTambah.textContent = "";
+
+      const tr = tbody.insertRow(tbody.rows.length - 1); // sebelum baris "kosong"
+      tr.className = "baru";
+      tr.insertCell().textContent =
+        nama.charAt(0).toUpperCase() + nama.slice(1);
+      tr.insertCell().textContent = kebiasaan;
+      inNama.value = "";
+      inKebiasaan.value = "";
+      perbaruiStatistik();
+    });
+  }
+
+  perbaruiStatistik();
+
+  /* ==========================================================
+     8. KONFETI SAAT FOTO DIKLIK (Web Animations API)
+     ========================================================== */
+  const foto = $(".muncul img");
   if (foto) {
     foto.style.cursor = "pointer";
     foto.title = "Klik aku!";
     foto.addEventListener("click", (e) => {
       const warna = ["#ff007f", "#7f00ff", "#00f0ff", "#fffc00", "#00e676"];
       for (let n = 0; n < 40; n++) {
-        const k = document.createElement("span");
-        k.style.cssText = `
-          position:fixed; left:${e.clientX}px; top:${e.clientY}px;
-          width:8px; height:8px; border-radius:2px; pointer-events:none;
-          background:${warna[n % warna.length]}; z-index:9999;`;
+        const k = buat("span", "konfeti");
+        k.style.cssText = `position:fixed;left:${e.clientX}px;top:${e.clientY}px;width:8px;height:8px;
+          border-radius:2px;pointer-events:none;background:${warna[n % warna.length]};z-index:9999;`;
         document.body.appendChild(k);
-
         const sudut = Math.random() * Math.PI * 2;
         const jarak = 80 + Math.random() * 160;
         k.animate(
           [
             { transform: "translate(0,0) rotate(0deg)", opacity: 1 },
             {
-              transform: `translate(${Math.cos(sudut) * jarak}px, ${
-                Math.sin(sudut) * jarak + 120
-              }px) rotate(${Math.random() * 720}deg)`,
+              transform: `translate(${Math.cos(sudut) * jarak}px, ${Math.sin(sudut) * jarak + 120}px) rotate(${Math.random() * 720}deg)`,
               opacity: 0,
             },
           ],
@@ -239,45 +327,230 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ==========================================================
-     7. TOMBOL MELAYANG: MODE GELAP & KEMBALI KE ATAS
+     9. KALKULATOR IP SEMESTER (array, loop, reduce, localStorage)
      ========================================================== */
-  const wadah = document.createElement("div");
-  // Inline style dipakai supaya tidak ikut style "body > *" dari style.css
-  wadah.style.cssText = `
-    position:fixed; right:20px; bottom:20px; display:flex; flex-direction:column;
-    gap:10px; padding:0; margin:0; background:none; border:none;
-    box-shadow:none; z-index:1000;`;
+  const skrip = $('script[src="script.js"]');
 
-  const tombolGelap = document.createElement("button");
-  tombolGelap.className = "tombol-float";
-  tombolGelap.textContent = "\u{1F319}";
+  // ARRAY skala nilai: [huruf, bobot]
+  const skalaNilai = [
+    ["A", 4],
+    ["AB", 3.5],
+    ["B", 3],
+    ["BC", 2.5],
+    ["C", 2],
+    ["D", 1],
+    ["E", 0],
+  ];
+  const bobot = Object.fromEntries(skalaNilai);
+
+  const ipk = buat("div", "ipk");
+  ipk.append(buat("h3", "", "\u{1F393} Kalkulator IP Semester"));
+  ipk.append(
+    buat(
+      "p",
+      "info-kecil",
+      "Hitung IP semestermu. Skala nilai umum (A = 4 sampai E = 0), sesuaikan dengan aturan kampus.",
+    ),
+  );
+
+  const judulKolom = buat("div", "ipk-judul");
+  ["Mata kuliah", "SKS", "Nilai", ""].forEach((t) =>
+    judulKolom.appendChild(buat("span", "", t)),
+  );
+  const daftarMk = buat("div", "ipk-daftar");
+  const errIpk = buat("p", "pesan-error");
+  const tbTambah = buat("button", "tombol", "+ Tambah mata kuliah");
+  tbTambah.type = "button";
+  const tbReset = buat("button", "tombol sekunder", "Reset");
+  tbReset.type = "button";
+  const aksiIpk = buat("div", "ipk-aksi");
+  aksiIpk.append(tbTambah, tbReset);
+
+  const hasilIpk = buat("div", "ipk-hasil");
+  const angkaIpk = buat("div", "ipk-angka", "0.00");
+  const barIpk = buat("div", "ipk-bar");
+  const isiIpk = buat("div", "ipk-isi");
+  barIpk.appendChild(isiIpk);
+  const ketIpk = buat("div", "info-kecil", "");
+  hasilIpk.append(angkaIpk, barIpk, ketIpk);
+
+  ipk.append(judulKolom, daftarMk, errIpk, aksiIpk, hasilIpk);
+  skrip.insertAdjacentElement("beforebegin", ipk);
+
+  let matkul = bacaLS("ipkMatkul", [
+    { nama: "Algoritma dan Pemrograman", sks: 3, nilai: "A" },
+    { nama: "Matematika Diskrit", sks: 3, nilai: "B" },
+  ]);
+
+  function hitungIpk() {
+    let pesan = "";
+    const valid = matkul.filter((m, i) => {
+      const ok = Number.isInteger(m.sks) && m.sks >= 1 && m.sks <= 6;
+      if (!ok && !pesan)
+        pesan = `SKS baris ${i + 1} harus bilangan bulat 1 sampai 6.`;
+      return ok;
+    });
+    errIpk.textContent = pesan;
+
+    const totalSks = valid.reduce((jml, m) => jml + m.sks, 0);
+    const totalMutu = valid.reduce((jml, m) => jml + m.sks * bobot[m.nilai], 0);
+    const ip = totalSks ? totalMutu / totalSks : 0;
+
+    let predikat;
+    if (totalSks === 0) predikat = "Isi mata kuliah dulu.";
+    else if (ip >= 3.5) predikat = "Sangat memuaskan";
+    else if (ip >= 3) predikat = "Memuaskan";
+    else if (ip >= 2.5) predikat = "Cukup baik";
+    else predikat = "Perlu ditingkatkan";
+
+    angkaIpk.textContent = ip.toFixed(2);
+    isiIpk.style.width = (ip / 4) * 100 + "%";
+    ketIpk.textContent = totalSks
+      ? `${totalSks} SKS \u2022 ${predikat}`
+      : predikat;
+    simpanLS("ipkMatkul", matkul);
+  }
+
+  function renderMatkul() {
+    daftarMk.replaceChildren();
+    matkul.forEach((m, i) => {
+      const baris = buat("div", "ipk-baris");
+
+      const inNamaMk = buat("input");
+      inNamaMk.placeholder = "Nama mata kuliah";
+      inNamaMk.maxLength = 40;
+      inNamaMk.value = m.nama;
+      inNamaMk.addEventListener("input", () => {
+        m.nama = inNamaMk.value;
+        hitungIpk();
+      });
+
+      const inSks = buat("input");
+      inSks.type = "number";
+      inSks.min = 1;
+      inSks.max = 6;
+      inSks.value = m.sks;
+      inSks.addEventListener("input", () => {
+        m.sks = Number(inSks.value);
+        hitungIpk();
+      });
+
+      const pilih = buat("select");
+      skalaNilai.forEach(([huruf]) => {
+        // LOOP membuat opsi nilai
+        const opsi = buat("option", "", huruf);
+        opsi.value = huruf;
+        pilih.appendChild(opsi);
+      });
+      pilih.value = m.nilai;
+      pilih.addEventListener("change", () => {
+        m.nilai = pilih.value;
+        hitungIpk();
+      });
+
+      const hapus = buat("button", "ipk-hapus", "\u00D7");
+      hapus.type = "button";
+      hapus.setAttribute("aria-label", "Hapus baris " + (i + 1));
+      hapus.addEventListener("click", () => {
+        matkul.splice(i, 1);
+        renderMatkul();
+      });
+
+      baris.append(inNamaMk, inSks, pilih, hapus);
+      daftarMk.appendChild(baris);
+    });
+    hitungIpk();
+  }
+
+  tbTambah.addEventListener("click", () => {
+    if (matkul.length >= 12) {
+      errIpk.textContent = "Maksimal 12 mata kuliah.";
+      return;
+    }
+    matkul.push({ nama: "", sks: 2, nilai: "A" });
+    renderMatkul();
+  });
+  tbReset.addEventListener("click", () => {
+    if (confirm("Kosongkan semua mata kuliah?")) {
+      matkul = [];
+      renderMatkul();
+    }
+  });
+  renderMatkul();
+
+  /* ==========================================================
+     10. PENGHITUNG KUNJUNGAN (localStorage)
+     ========================================================== */
+  const kunjungan = bacaLS("kunjungan", 0) + 1;
+  const terakhir = bacaLS("kunjunganTerakhir", null);
+  simpanLS("kunjungan", kunjungan);
+  simpanLS("kunjunganTerakhir", Date.now());
+
+  const kaki = buat("div", "kotak-info");
+  kaki.appendChild(
+    buat("b", "", `Kamu sudah membuka halaman ini ${kunjungan} kali.`),
+  );
+  kaki.appendChild(
+    buat(
+      "small",
+      "",
+      terakhir
+        ? "Terakhir berkunjung: " + new Date(terakhir).toLocaleString("id-ID")
+        : "Ini kunjungan pertamamu, selamat datang!",
+    ),
+  );
+  skrip.insertAdjacentElement("beforebegin", kaki);
+
+  /* ==========================================================
+     11. TOMBOL MELAYANG: ukuran teks, mode gelap, ke atas
+     ========================================================== */
+  const wadah = buat("div");
+  wadah.id = "tombol-float";
+  const tombolKecil = buat("button", "tombol-float", "A-");
+  const tombolBesar = buat("button", "tombol-float", "A+");
+  const tombolGelap = buat("button", "tombol-float", "\u{1F319}");
+  const tombolAtas = buat("button", "tombol-float", "\u2B06");
+  tombolKecil.title = "Perkecil teks";
+  tombolBesar.title = "Perbesar teks";
   tombolGelap.title = "Mode gelap / terang";
-
-  const tombolAtas = document.createElement("button");
-  tombolAtas.className = "tombol-float";
-  tombolAtas.textContent = "\u2B06";
   tombolAtas.title = "Kembali ke atas";
   tombolAtas.style.display = "none";
-
-  wadah.append(tombolAtas, tombolGelap);
+  wadah.append(tombolAtas, tombolBesar, tombolKecil, tombolGelap);
   document.body.appendChild(wadah);
 
-  // Mode gelap (diingat lewat localStorage)
+  // Ukuran teks (12px - 24px)
+  let ukuran = bacaLS("ukuranTeks", 16);
+  const terapkanUkuran = () => {
+    document.body.style.fontSize = ukuran + "px";
+    simpanLS("ukuranTeks", ukuran);
+  };
+  terapkanUkuran();
+  tombolBesar.addEventListener("click", () => {
+    ukuran = Math.min(24, ukuran + 2);
+    terapkanUkuran();
+  });
+  tombolKecil.addEventListener("click", () => {
+    ukuran = Math.max(12, ukuran - 2);
+    terapkanUkuran();
+  });
+
+  // Mode gelap
   const setGelap = (aktif) => {
     document.body.classList.toggle("dark", aktif);
     tombolGelap.textContent = aktif ? "\u2600\uFE0F" : "\u{1F319}";
-    try {
-      localStorage.setItem("modeGelap", aktif ? "1" : "0");
-    } catch (e) {}
+    simpanLS("modeGelap", aktif);
   };
-  try {
-    setGelap(localStorage.getItem("modeGelap") === "1");
-  } catch (e) {}
+  setGelap(
+    bacaLS(
+      "modeGelap",
+      window.matchMedia("(prefers-color-scheme: dark)").matches,
+    ),
+  );
   tombolGelap.addEventListener("click", () =>
     setGelap(!document.body.classList.contains("dark")),
   );
 
-  // Tombol kembali ke atas
+  // Kembali ke atas
   window.addEventListener("scroll", () => {
     tombolAtas.style.display = window.scrollY > 300 ? "block" : "none";
   });
@@ -286,7 +559,7 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   /* ==========================================================
-     8. JUDUL TAB BERUBAH SAAT PINDAH TAB
+     12. JUDUL TAB BERUBAH SAAT PINDAH TAB
      ========================================================== */
   const judulAsli = document.title;
   document.addEventListener("visibilitychange", () => {
