@@ -22,7 +22,6 @@ function kunci(sectionId) {
     .forEach((el) => (el.disabled = true));
 }
 
-/* Langkah 1: Nama dan Jumlah Pilihan */
 $("ok1").addEventListener("click", () => {
   const nama = $("nama").value.trim();
   const jmlStr = $("jml").value.trim();
@@ -67,7 +66,6 @@ $("ok1").addEventListener("click", () => {
   $("p1").focus();
 });
 
-/* Langkah 2: Teks Pilihan */
 $("ok2").addEventListener("click", () => {
   const inputs = [...document.querySelectorAll(".teks-pilihan")];
   inputs.forEach((el) => el.classList.remove("invalid"));
@@ -93,7 +91,6 @@ $("ok2").addEventListener("click", () => {
   tampil("step3");
 });
 
-/* Langkah 3: Radio Button */
 function renderPilihan() {
   const wadah = $("wadahPilihan");
   wadah.innerHTML = "";
@@ -123,7 +120,6 @@ $("ok3").addEventListener("click", () => {
   $("email").focus();
 });
 
-/* Langkah 4: Email (pattern matching) */
 const POLA_EMAIL =
   /^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/;
 
@@ -151,7 +147,6 @@ $("ok4").addEventListener("click", () => {
 
 $("ulang").addEventListener("click", () => location.reload());
 
-// Enter pada input memicu tombol OK pada langkahnya
 document.addEventListener("keydown", (e) => {
   if (
     e.key !== "Enter" ||
